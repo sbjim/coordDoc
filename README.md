@@ -25,4 +25,4 @@
 
 ## 效果图
 
-![1](./static\images\1.gif)
+![1](https://www.hualigs.cn/image/6016aa98b3c6c.jpg)
