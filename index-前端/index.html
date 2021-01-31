@@ -1,0 +1,88 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>多人协作文档</title>
+    <script src="./jquery.min.js"></script>
+    <script
+            type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/wangeditor@latest/dist/wangEditor.min.js"
+    ></script>
+
+</head>
+<body>
+<h1>多人协作文档</h1>
+
+<div id="editor"></div>
+
+
+<script>
+
+    var client_id = ""
+
+
+    const E = window.wangEditor
+    const editor = new E("#editor")
+    editor.create()
+
+
+    var ws = new WebSocket("ws://127.0.0.1:8000");
+    ws.onopen = function (e) {
+        // data['type'] = 'connection'
+        // data['data'] = ""
+        //
+        data = {
+            type:"connection",
+            data:"",
+        }
+        ws.send(JSON.stringify(data))
+        console.log('onopen');
+    };
+    ws.onerror = function (e) {
+        console.log('onerror');
+    }
+    ws.onclose = function (e) {
+        console.log('onclose');
+    }
+    ws.onmessage = function (e) {
+        /**
+         * 判断如果是自己发送的话 就不用追加数据
+         */
+        data  = JSON.parse(e.data)
+        console.log(data)
+        switch (data.type) {
+            case "connection":
+                client_id = data.client_id;
+                break;
+                case 'msg':
+                    //同步到别人的编辑器中
+                    if (data.client_id != client_id){
+                        // 追加
+                        editor.txt.html(data.data)
+                    }
+                    break
+
+            default:
+                console.log("????");
+                break;
+
+
+        }
+        console.log('onmessage');
+
+
+    }
+
+    $('#editor').keyup(function (event) {
+        if (event.keyCode == 13) {
+            var content  = editor.txt.html()
+            data = {
+                "type":"text",
+                "data":content,
+                "client_id":client_id,
+            }
+            ws.send(JSON.stringify(data))
+        }
+    });
+</script>
+</body>
+</html>
